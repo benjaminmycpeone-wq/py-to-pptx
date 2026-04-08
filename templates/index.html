@@ -523,7 +523,7 @@
 
             const formData = new FormData();
             formData.append('file', selectedFile);
-            const minDelay = new Promise(r => setTimeout(r, 4000));
+            const minDelay = new Promise(r => setTimeout(r, 2500));
 
             try {
                 const [res] = await Promise.all([
