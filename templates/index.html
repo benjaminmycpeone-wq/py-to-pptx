@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PY to PPTX Converter</title>
+    <title>PPTX Converter</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -200,16 +200,16 @@
 </head>
 <body>
     <div class="container">
-        <h1><span>.py</span> to <span>.pptx</span></h1>
-        <p class="subtitle">Upload a Python script that generates a PowerPoint file</p>
+        <h1><span>.py</span> / <span>.html</span> to <span>.pptx</span></h1>
+        <p class="subtitle">Upload a Python script or HTML file to generate a PowerPoint</p>
 
         <div class="drop-zone" id="dropZone">
             <div class="drop-zone-icon">&#128196;</div>
             <p><strong>Click to upload</strong> or drag & drop</p>
-            <p style="margin-top: 4px; font-size: 0.8rem;">.py files only</p>
+            <p style="margin-top: 4px; font-size: 0.8rem;">.py or .html files</p>
         </div>
 
-        <input type="file" id="fileInput" accept=".py">
+        <input type="file" id="fileInput" accept=".py,.html,.htm">
 
         <div class="file-info" id="fileInfo">
             <span class="file-icon">&#128013;</span>
@@ -256,8 +256,9 @@
             e.preventDefault();
             dropZone.classList.remove('drag-over');
             const file = e.dataTransfer.files[0];
-            if (file && file.name.endsWith('.py')) selectFile(file);
-            else showStatus('Please drop a .py file', 'error');
+            const allowed = ['.py', '.html', '.htm'];
+            if (file && allowed.some(ext => file.name.toLowerCase().endsWith(ext))) selectFile(file);
+            else showStatus('Please drop a .py or .html file', 'error');
         });
         fileInput.addEventListener('change', () => { if (fileInput.files[0]) selectFile(fileInput.files[0]); });
         fileRemove.addEventListener('click', clearFile);
@@ -267,6 +268,8 @@
             selectedFile = file;
             fileName.textContent = file.name;
             fileSize.textContent = formatBytes(file.size);
+            const icon = document.querySelector('.file-icon');
+            icon.textContent = file.name.endsWith('.py') ? '\u{1F40D}' : '\u{1F310}';
             fileInfo.classList.add('visible');
             convertBtn.classList.add('visible');
             status.classList.remove('visible');
@@ -349,17 +352,21 @@
                     return;
                 }
 
-                historyList.innerHTML = '<div class="history-list">' + data.map(item => `
+                historyList.innerHTML = '<div class="history-list">' + data.map(item => {
+                    const fname = item.input_filename || item.py_filename || '';
+                    const type = item.conversion_type === 'html' ? 'HTML' : 'PY';
+                    const typeColor = item.conversion_type === 'html' ? '#f472b6' : '#38bdf8';
+                    return `
                     <div class="history-item">
                         <div class="history-badge ${item.status}"></div>
                         <div class="history-info">
-                            <div class="history-filename">${esc(item.py_filename)}</div>
+                            <div class="history-filename"><span style="color:${typeColor};font-size:0.7rem;font-weight:700;margin-right:6px;vertical-align:middle;">${type}</span>${esc(fname)}</div>
                             <div class="history-meta">${timeAgo(item.created_at)}${item.pptx_filename ? ' &rarr; ' + esc(item.pptx_filename) : ''}</div>
                             ${item.error ? '<div class="history-error-text" title="' + esc(item.error) + '">' + esc(item.error) + '</div>' : ''}
                         </div>
                         ${item.pptx_filename ? '<span class="history-output">.pptx</span>' : ''}
-                    </div>
-                `).join('') + '</div>';
+                    </div>`;
+                }).join('') + '</div>';
             } catch (e) {
                 // silently fail
             }
