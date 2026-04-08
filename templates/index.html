@@ -135,6 +135,27 @@
             border-radius: 999px;
         }
 
+        .history-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .clear-btn {
+            background: none;
+            border: 1px solid #334155;
+            color: #64748b;
+            font-size: 0.75rem;
+            padding: 3px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .clear-btn:hover {
+            border-color: #ef4444;
+            color: #f87171;
+        }
+
         .history-empty {
             text-align: center;
             color: #475569;
@@ -227,7 +248,10 @@
         <div class="history-section">
             <div class="history-header">
                 <h2>Conversion History</h2>
-                <span class="history-count" id="historyCount">0</span>
+                <div class="history-actions">
+                    <button class="clear-btn" id="clearBtn" style="display:none;">Clear all</button>
+                    <span class="history-count" id="historyCount">0</span>
+                </div>
             </div>
             <div id="historyList">
                 <div class="history-empty">No conversions yet</div>
@@ -246,8 +270,15 @@
         const status = document.getElementById('status');
         const historyList = document.getElementById('historyList');
         const historyCount = document.getElementById('historyCount');
+        const clearBtn = document.getElementById('clearBtn');
 
         let selectedFile = null;
+
+        clearBtn.addEventListener('click', async () => {
+            if (!confirm('Clear all conversion history?')) return;
+            await fetch('/history', { method: 'DELETE' });
+            loadHistory();
+        });
 
         dropZone.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
@@ -346,6 +377,8 @@
                 const res = await fetch('/history');
                 const data = await res.json();
                 historyCount.textContent = data.length;
+
+                clearBtn.style.display = data.length > 0 ? 'inline-block' : 'none';
 
                 if (data.length === 0) {
                     historyList.innerHTML = '<div class="history-empty">No conversions yet</div>';

@@ -4,7 +4,7 @@ import shutil
 import sqlite3
 import subprocess
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from flask import Flask, render_template, request, send_file, jsonify
 from html_to_pptx import html_to_pptx
@@ -57,12 +57,30 @@ def index():
 
 @app.route("/history")
 def history():
+    _purge_old_history()
     conn = get_db()
     rows = conn.execute(
         "SELECT * FROM history ORDER BY id DESC LIMIT 50"
     ).fetchall()
     conn.close()
     return jsonify([dict(r) for r in rows])
+
+
+@app.route("/history", methods=["DELETE"])
+def clear_history():
+    conn = get_db()
+    conn.execute("DELETE FROM history")
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+
+
+def _purge_old_history():
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    conn = get_db()
+    conn.execute("DELETE FROM history WHERE created_at < ?", (cutoff,))
+    conn.commit()
+    conn.close()
 
 
 @app.route("/upload", methods=["POST"])
