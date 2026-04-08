@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PY to PPTX Converter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 560px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        h1 span { color: #38bdf8; }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 32px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #334155;
+            border-radius: 16px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #1e293b;
+        }
+
+        .drop-zone:hover, .drop-zone.drag-over {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+        }
+
+        .drop-zone-icon { font-size: 3rem; margin-bottom: 12px; }
+        .drop-zone p { color: #94a3b8; font-size: 0.95rem; }
+        .drop-zone p strong { color: #38bdf8; }
+
+        .file-info {
+            display: none;
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #1e293b;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-info.visible { display: flex; }
+        .file-icon { font-size: 1.5rem; }
+        .file-details { flex: 1; }
+        .file-name { font-weight: 600; font-size: 0.9rem; word-break: break-all; }
+        .file-size { color: #64748b; font-size: 0.8rem; }
+
+        .file-remove {
+            background: none; border: none; color: #64748b;
+            cursor: pointer; font-size: 1.2rem; padding: 4px;
+        }
+        .file-remove:hover { color: #ef4444; }
+
+        .convert-btn {
+            display: none; width: 100%; margin-top: 16px; padding: 14px;
+            font-size: 1rem; font-weight: 600; border: none; border-radius: 10px;
+            cursor: pointer; background: #38bdf8; color: #0f172a; transition: all 0.2s;
+        }
+        .convert-btn.visible { display: block; }
+        .convert-btn:hover { background: #7dd3fc; }
+        .convert-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+        .status {
+            display: none; margin-top: 16px; padding: 12px 16px;
+            border-radius: 10px; font-size: 0.9rem; text-align: center;
+        }
+        .status.visible { display: block; }
+        .status.processing { background: #1e3a5f; color: #7dd3fc; }
+        .status.success { background: #14532d; color: #4ade80; }
+        .status.error { background: #450a0a; color: #fca5a5; }
+
+        .spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid #7dd3fc; border-top-color: transparent;
+            border-radius: 50%; animation: spin 0.7s linear infinite;
+            vertical-align: middle; margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        input[type="file"] { display: none; }
+
+        /* History */
+        .history-section {
+            margin-top: 40px;
+        }
+
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .history-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .history-count {
+            font-size: 0.75rem;
+            background: #334155;
+            color: #94a3b8;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+
+        .history-empty {
+            text-align: center;
+            color: #475569;
+            font-size: 0.85rem;
+            padding: 24px;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #1e293b;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+
+        .history-badge {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .history-badge.success { background: #4ade80; }
+        .history-badge.error { background: #f87171; }
+
+        .history-info { flex: 1; min-width: 0; }
+
+        .history-filename {
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-meta {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .history-output {
+            font-size: 0.75rem;
+            color: #38bdf8;
+        }
+
+        .history-error-text {
+            font-size: 0.7rem;
+            color: #f87171;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span>.py</span> to <span>.pptx</span></h1>
+        <p class="subtitle">Upload a Python script that generates a PowerPoint file</p>
+
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-zone-icon">&#128196;</div>
+            <p><strong>Click to upload</strong> or drag & drop</p>
+            <p style="margin-top: 4px; font-size: 0.8rem;">.py files only</p>
+        </div>
+
+        <input type="file" id="fileInput" accept=".py">
+
+        <div class="file-info" id="fileInfo">
+            <span class="file-icon">&#128013;</span>
+            <div class="file-details">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+            </div>
+            <button class="file-remove" id="fileRemove">&times;</button>
+        </div>
+
+        <button class="convert-btn" id="convertBtn">Convert to PPTX</button>
+        <div class="status" id="status"></div>
+
+        <!-- History -->
+        <div class="history-section">
+            <div class="history-header">
+                <h2>Conversion History</h2>
+                <span class="history-count" id="historyCount">0</span>
+            </div>
+            <div id="historyList">
+                <div class="history-empty">No conversions yet</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const fileRemove = document.getElementById('fileRemove');
+        const convertBtn = document.getElementById('convertBtn');
+        const status = document.getElementById('status');
+        const historyList = document.getElementById('historyList');
+        const historyCount = document.getElementById('historyCount');
+
+        let selectedFile = null;
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.py')) selectFile(file);
+            else showStatus('Please drop a .py file', 'error');
+        });
+        fileInput.addEventListener('change', () => { if (fileInput.files[0]) selectFile(fileInput.files[0]); });
+        fileRemove.addEventListener('click', clearFile);
+        convertBtn.addEventListener('click', convert);
+
+        function selectFile(file) {
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatBytes(file.size);
+            fileInfo.classList.add('visible');
+            convertBtn.classList.add('visible');
+            status.classList.remove('visible');
+        }
+
+        function clearFile() {
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.remove('visible');
+            convertBtn.classList.remove('visible');
+            status.classList.remove('visible');
+        }
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            return (bytes / 1024).toFixed(1) + ' KB';
+        }
+
+        function showStatus(msg, type) {
+            status.className = 'status visible ' + type;
+            status.innerHTML = (type === 'processing' ? '<span class="spinner"></span>' : '') + msg;
+        }
+
+        async function convert() {
+            if (!selectedFile) return;
+            convertBtn.disabled = true;
+            showStatus('Running script...', 'processing');
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || 'Conversion failed');
+                }
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const disposition = res.headers.get('Content-Disposition');
+                let name = 'output.pptx';
+                if (disposition) {
+                    const match = disposition.match(/filename=(.+)/);
+                    if (match) name = match[1];
+                }
+                a.href = url;
+                a.download = name;
+                a.click();
+                URL.revokeObjectURL(url);
+                showStatus('Download started!', 'success');
+            } catch (err) {
+                showStatus(err.message, 'error');
+            } finally {
+                convertBtn.disabled = false;
+                loadHistory();
+            }
+        }
+
+        function timeAgo(isoStr) {
+            const diff = Date.now() - new Date(isoStr).getTime();
+            const s = Math.floor(diff / 1000);
+            if (s < 60) return 'just now';
+            const m = Math.floor(s / 60);
+            if (m < 60) return m + 'm ago';
+            const h = Math.floor(m / 60);
+            if (h < 24) return h + 'h ago';
+            const d = Math.floor(h / 24);
+            return d + 'd ago';
+        }
+
+        async function loadHistory() {
+            try {
+                const res = await fetch('/history');
+                const data = await res.json();
+                historyCount.textContent = data.length;
+
+                if (data.length === 0) {
+                    historyList.innerHTML = '<div class="history-empty">No conversions yet</div>';
+                    return;
+                }
+
+                historyList.innerHTML = '<div class="history-list">' + data.map(item => `
+                    <div class="history-item">
+                        <div class="history-badge ${item.status}"></div>
+                        <div class="history-info">
+                            <div class="history-filename">${esc(item.py_filename)}</div>
+                            <div class="history-meta">${timeAgo(item.created_at)}${item.pptx_filename ? ' &rarr; ' + esc(item.pptx_filename) : ''}</div>
+                            ${item.error ? '<div class="history-error-text" title="' + esc(item.error) + '">' + esc(item.error) + '</div>' : ''}
+                        </div>
+                        ${item.pptx_filename ? '<span class="history-output">.pptx</span>' : ''}
+                    </div>
+                `).join('') + '</div>';
+            } catch (e) {
+                // silently fail
+            }
+        }
+
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = str || '';
+            return d.innerHTML;
+        }
+
+        loadHistory();
+    </script>
+</body>
+</html>
