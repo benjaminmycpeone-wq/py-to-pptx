@@ -327,6 +327,58 @@
             max-width: 300px;
         }
 
+        /* Loading modal */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.25s ease;
+        }
+        .loading-overlay.visible { display: flex; }
+        .loading-overlay.fade-out { animation: fadeOut 0.3s ease forwards; }
+
+        .loading-gif {
+            width: 280px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 60px rgba(167, 139, 246, 0.08);
+        }
+
+        .loading-text {
+            font-size: 0.85rem;
+            color: #52525b;
+            letter-spacing: 0.05em;
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.2s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -379,6 +431,12 @@
         </div>
     </div>
 
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <img class="loading-gif" src="/static/loading.gif" alt="Converting...">
+        <div class="loading-text">Converting<span class="loading-dots"></span></div>
+    </div>
+
     <script>
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
@@ -391,8 +449,21 @@
         const historyList = document.getElementById('historyList');
         const historyCount = document.getElementById('historyCount');
         const clearBtn = document.getElementById('clearBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
 
         let selectedFile = null;
+
+        function showLoading() {
+            loadingOverlay.classList.remove('fade-out');
+            loadingOverlay.classList.add('visible');
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.add('fade-out');
+            loadingOverlay.addEventListener('animationend', () => {
+                loadingOverlay.classList.remove('visible', 'fade-out');
+            }, { once: true });
+        }
 
         clearBtn.addEventListener('click', async () => {
             if (!confirm('Clear all conversion history?')) return;
@@ -447,13 +518,19 @@
         async function convert() {
             if (!selectedFile) return;
             convertBtn.disabled = true;
-            showStatus('Converting...', 'processing');
+            status.classList.remove('visible');
+            showLoading();
 
             const formData = new FormData();
             formData.append('file', selectedFile);
+            const minDelay = new Promise(r => setTimeout(r, 4000));
 
             try {
-                const res = await fetch('/upload', { method: 'POST', body: formData });
+                const [res] = await Promise.all([
+                    fetch('/upload', { method: 'POST', body: formData }),
+                    minDelay
+                ]);
+                hideLoading();
                 if (!res.ok) {
                     const data = await res.json();
                     throw new Error(data.error || 'Conversion failed');
@@ -473,6 +550,7 @@
                 URL.revokeObjectURL(url);
                 showStatus('Download started', 'success');
             } catch (err) {
+                hideLoading();
                 showStatus(err.message, 'error');
             } finally {
                 convertBtn.disabled = false;
