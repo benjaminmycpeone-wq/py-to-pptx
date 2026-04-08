@@ -9,100 +9,184 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+            background: #050505;
+            color: #d4d4d8;
             min-height: 100vh;
             display: flex;
             align-items: flex-start;
             justify-content: center;
-            padding: 40px 20px;
+            padding: 48px 20px;
+            overflow-x: hidden;
+        }
+
+        /* Ambient background glow */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40%;
+            left: -20%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -30%;
+            right: -20%;
+            width: 60%;
+            height: 60%;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.04) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .container {
             max-width: 560px;
             width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Glass mixin */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         h1 {
             text-align: center;
-            font-size: 1.8rem;
+            font-size: 1.7rem;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            letter-spacing: -0.03em;
+            color: #fafafa;
         }
 
-        h1 span { color: #38bdf8; }
+        h1 span {
+            background: linear-gradient(135deg, #a78bfa, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
         .subtitle {
             text-align: center;
-            color: #94a3b8;
-            font-size: 0.9rem;
+            color: #52525b;
+            font-size: 0.85rem;
             margin-bottom: 32px;
+            letter-spacing: 0.02em;
         }
 
         .drop-zone {
-            border: 2px dashed #334155;
-            border-radius: 16px;
-            padding: 48px 24px;
+            border: 1px dashed rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 52px 24px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
-            background: #1e293b;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
         }
 
         .drop-zone:hover, .drop-zone.drag-over {
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+            border-color: rgba(167, 139, 246, 0.3);
+            background: rgba(167, 139, 246, 0.04);
+            box-shadow: 0 0 40px rgba(167, 139, 246, 0.06), inset 0 0 40px rgba(167, 139, 246, 0.02);
         }
 
-        .drop-zone-icon { font-size: 3rem; margin-bottom: 12px; }
-        .drop-zone p { color: #94a3b8; font-size: 0.95rem; }
-        .drop-zone p strong { color: #38bdf8; }
+        .drop-zone-icon {
+            font-size: 2.5rem;
+            margin-bottom: 14px;
+            filter: grayscale(0.3);
+        }
+        .drop-zone p { color: #52525b; font-size: 0.9rem; }
+        .drop-zone p strong {
+            background: linear-gradient(135deg, #a78bfa, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
         .file-info {
             display: none;
-            margin-top: 16px;
+            margin-top: 14px;
             padding: 12px 16px;
-            background: #1e293b;
-            border-radius: 10px;
-            border: 1px solid #334155;
+            border-radius: 14px;
             align-items: center;
             gap: 12px;
         }
 
         .file-info.visible { display: flex; }
-        .file-icon { font-size: 1.5rem; }
+        .file-icon { font-size: 1.4rem; filter: grayscale(0.2); }
         .file-details { flex: 1; }
-        .file-name { font-weight: 600; font-size: 0.9rem; word-break: break-all; }
-        .file-size { color: #64748b; font-size: 0.8rem; }
+        .file-name { font-weight: 600; font-size: 0.85rem; word-break: break-all; color: #e4e4e7; }
+        .file-size { color: #3f3f46; font-size: 0.75rem; margin-top: 1px; }
 
         .file-remove {
-            background: none; border: none; color: #64748b;
+            background: none; border: none; color: #3f3f46;
             cursor: pointer; font-size: 1.2rem; padding: 4px;
+            transition: color 0.2s;
         }
         .file-remove:hover { color: #ef4444; }
 
         .convert-btn {
-            display: none; width: 100%; margin-top: 16px; padding: 14px;
-            font-size: 1rem; font-weight: 600; border: none; border-radius: 10px;
-            cursor: pointer; background: #38bdf8; color: #0f172a; transition: all 0.2s;
+            display: none; width: 100%; margin-top: 14px; padding: 14px;
+            font-size: 0.95rem; font-weight: 600; border: none; border-radius: 14px;
+            cursor: pointer; transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(167, 139, 246, 0.15), rgba(56, 189, 248, 0.15));
+            border: 1px solid rgba(167, 139, 246, 0.2);
+            color: #e4e4e7;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            letter-spacing: 0.01em;
         }
         .convert-btn.visible { display: block; }
-        .convert-btn:hover { background: #7dd3fc; }
-        .convert-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+        .convert-btn:hover {
+            background: linear-gradient(135deg, rgba(167, 139, 246, 0.25), rgba(56, 189, 248, 0.25));
+            border-color: rgba(167, 139, 246, 0.35);
+            box-shadow: 0 0 30px rgba(167, 139, 246, 0.1);
+        }
+        .convert-btn:disabled {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.04);
+            color: #3f3f46;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
 
         .status {
-            display: none; margin-top: 16px; padding: 12px 16px;
-            border-radius: 10px; font-size: 0.9rem; text-align: center;
+            display: none; margin-top: 14px; padding: 12px 16px;
+            border-radius: 14px; font-size: 0.85rem; text-align: center;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
         .status.visible { display: block; }
-        .status.processing { background: #1e3a5f; color: #7dd3fc; }
-        .status.success { background: #14532d; color: #4ade80; }
-        .status.error { background: #450a0a; color: #fca5a5; }
+        .status.processing {
+            background: rgba(56, 189, 248, 0.06);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            color: #7dd3fc;
+        }
+        .status.success {
+            background: rgba(74, 222, 128, 0.06);
+            border: 1px solid rgba(74, 222, 128, 0.1);
+            color: #4ade80;
+        }
+        .status.error {
+            background: rgba(248, 113, 113, 0.06);
+            border: 1px solid rgba(248, 113, 113, 0.1);
+            color: #fca5a5;
+        }
 
         .spinner {
-            display: inline-block; width: 16px; height: 16px;
-            border: 2px solid #7dd3fc; border-top-color: transparent;
-            border-radius: 50%; animation: spin 0.7s linear infinite;
+            display: inline-block; width: 14px; height: 14px;
+            border: 1.5px solid rgba(125, 211, 252, 0.4); border-top-color: transparent;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
             vertical-align: middle; margin-right: 8px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -111,28 +195,33 @@
 
         /* History */
         .history-section {
-            margin-top: 40px;
+            margin-top: 44px;
         }
 
         .history-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
 
         .history-header h2 {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: 600;
-            color: #94a3b8;
+            color: #52525b;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-size: 0.7rem;
         }
 
         .history-count {
-            font-size: 0.75rem;
-            background: #334155;
-            color: #94a3b8;
+            font-size: 0.65rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #52525b;
             padding: 2px 8px;
             border-radius: 999px;
+            font-weight: 600;
         }
 
         .history-actions {
@@ -142,31 +231,34 @@
         }
 
         .clear-btn {
-            background: none;
-            border: 1px solid #334155;
-            color: #64748b;
-            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #3f3f46;
+            font-size: 0.7rem;
             padding: 3px 10px;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
         .clear-btn:hover {
-            border-color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.2);
             color: #f87171;
+            background: rgba(239, 68, 68, 0.04);
         }
 
         .history-empty {
             text-align: center;
-            color: #475569;
-            font-size: 0.85rem;
-            padding: 24px;
+            color: #27272a;
+            font-size: 0.8rem;
+            padding: 28px;
         }
 
         .history-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .history-item {
@@ -174,48 +266,76 @@
             align-items: center;
             gap: 12px;
             padding: 10px 14px;
-            background: #1e293b;
-            border-radius: 10px;
-            border: 1px solid #334155;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.07);
         }
 
         .history-badge {
-            width: 8px; height: 8px;
+            width: 6px; height: 6px;
             border-radius: 50%;
             flex-shrink: 0;
         }
-        .history-badge.success { background: #4ade80; }
-        .history-badge.error { background: #f87171; }
+        .history-badge.success {
+            background: #4ade80;
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+        }
+        .history-badge.error {
+            background: #f87171;
+            box-shadow: 0 0 8px rgba(248, 113, 113, 0.3);
+        }
 
         .history-info { flex: 1; min-width: 0; }
 
         .history-filename {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: #a1a1aa;
         }
 
         .history-meta {
-            font-size: 0.75rem;
-            color: #64748b;
+            font-size: 0.7rem;
+            color: #3f3f46;
             margin-top: 2px;
         }
 
         .history-output {
-            font-size: 0.75rem;
-            color: #38bdf8;
+            font-size: 0.65rem;
+            color: #52525b;
+            font-weight: 600;
+            letter-spacing: 0.03em;
         }
 
         .history-error-text {
-            font-size: 0.7rem;
-            color: #f87171;
+            font-size: 0.65rem;
+            color: rgba(248, 113, 113, 0.6);
             margin-top: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 300px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 4px; }
+
+        /* Selection */
+        ::selection {
+            background: rgba(167, 139, 246, 0.2);
+            color: #fafafa;
         }
     </style>
 </head>
@@ -227,12 +347,12 @@
         <div class="drop-zone" id="dropZone">
             <div class="drop-zone-icon">&#128196;</div>
             <p><strong>Click to upload</strong> or drag & drop</p>
-            <p style="margin-top: 4px; font-size: 0.8rem;">.py or .html files</p>
+            <p style="margin-top: 6px; font-size: 0.75rem; color: #27272a;">.py or .html files</p>
         </div>
 
         <input type="file" id="fileInput" accept=".py,.html,.htm">
 
-        <div class="file-info" id="fileInfo">
+        <div class="file-info glass" id="fileInfo">
             <span class="file-icon">&#128013;</span>
             <div class="file-details">
                 <div class="file-name" id="fileName"></div>
@@ -327,7 +447,7 @@
         async function convert() {
             if (!selectedFile) return;
             convertBtn.disabled = true;
-            showStatus('Running script...', 'processing');
+            showStatus('Converting...', 'processing');
 
             const formData = new FormData();
             formData.append('file', selectedFile);
@@ -351,7 +471,7 @@
                 a.download = name;
                 a.click();
                 URL.revokeObjectURL(url);
-                showStatus('Download started!', 'success');
+                showStatus('Download started', 'success');
             } catch (err) {
                 showStatus(err.message, 'error');
             } finally {
@@ -388,12 +508,12 @@
                 historyList.innerHTML = '<div class="history-list">' + data.map(item => {
                     const fname = item.input_filename || item.py_filename || '';
                     const type = item.conversion_type === 'html' ? 'HTML' : 'PY';
-                    const typeColor = item.conversion_type === 'html' ? '#f472b6' : '#38bdf8';
+                    const typeColor = item.conversion_type === 'html' ? '#f472b6' : '#a78bfa';
                     return `
                     <div class="history-item">
                         <div class="history-badge ${item.status}"></div>
                         <div class="history-info">
-                            <div class="history-filename"><span style="color:${typeColor};font-size:0.7rem;font-weight:700;margin-right:6px;vertical-align:middle;">${type}</span>${esc(fname)}</div>
+                            <div class="history-filename"><span style="color:${typeColor};font-size:0.6rem;font-weight:700;margin-right:6px;vertical-align:middle;opacity:0.7;">${type}</span>${esc(fname)}</div>
                             <div class="history-meta">${timeAgo(item.created_at)}${item.pptx_filename ? ' &rarr; ' + esc(item.pptx_filename) : ''}</div>
                             ${item.error ? '<div class="history-error-text" title="' + esc(item.error) + '">' + esc(item.error) + '</div>' : ''}
                         </div>
